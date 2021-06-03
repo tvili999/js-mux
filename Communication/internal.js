@@ -1,4 +1,4 @@
-const idGenerator = require("../helpers/idGenerator");
+const idGenerator = require("../idGenerator");
 const { Transmitter, Receiver } = require("../Muxer");
 
 module.exports = (props) => {
