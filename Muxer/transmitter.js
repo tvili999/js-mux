@@ -1,9 +1,11 @@
 const specBytes = require("./specialBytes");
+const createSet = require("./helpers/arraySet");
+const eq = require("./helpers/eq");
 
 module.exports = () => {
     let _dataHandlers = [];
     let _flushHandlers = [];
-    let _openChannels = [];
+    let _openChannels = createSet();
     let _currentChannel = null;
 
     const sendData = (data) => _dataHandlers.forEach(handler => handler(data));
@@ -15,14 +17,16 @@ module.exports = () => {
             if(type === "flush") _flushHandlers = [..._flushHandlers, handler];
         },
         send: (channel, data) => {
-            if(_currentChannel !== channel) {
+            channel = Buffer.from(channel);
+            if(!eq(_currentChannel, channel)) {
                 sendData(Buffer.from([ specBytes.ESCAPE, specBytes.START ]));
-                sendData(Buffer.from(channel));
-                sendData(Buffer.from([ specBytes.ESCAPE ]));
+                sendData(channel);
+                sendData(Buffer.from([ specBytes.ID_END ]));
 
                 _currentChannel = channel;
-                if(!_openChannels.includes(channel))
-                    _openChannels = [..._openChannels, channel];
+                const channelArray = [...channel];
+                if(!_openChannels.exists(channelArray))
+                    _openChannels.set(channelArray);
             }
 
             data = Buffer.from(data);
@@ -38,19 +42,21 @@ module.exports = () => {
             flush();
         },
         close: (channel) => {
-            if(!_openChannels.includes(channel))
+            channel = Buffer.from(channel);
+            const channelArray = [...channel];
+            if(!_openChannels.exists(channelArray))
                 return;
             
-            if(_currentChannel !== channel) {
+            if(!eq(_currentChannel, channel)) {
                 sendData(Buffer.from([ specBytes.ESCAPE, specBytes.START ]));
-                sendData(Buffer.from(channel));
-                sendData(Buffer.from([ specBytes.ESCAPE ]));
+                sendData(channel);
+                sendData(Buffer.from([ specBytes.ID_END ]));
             }
 
             sendData(Buffer.from([ specBytes.ESCAPE, specBytes.END ]));
             flush();
 
-            _openChannels = _openChannels.filter(x => x !== channel);
+            _openChannels.delete(channelArray);
             _currentChannel = null;
         }
     }

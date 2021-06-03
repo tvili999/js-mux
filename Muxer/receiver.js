@@ -43,7 +43,7 @@ module.exports = () => {
                     i++;
                 }
                 else if(_state === states.HEADER) {
-                    if(data[i] === specBytes.ESCAPE) {
+                    if(data[i] === specBytes.ID_END) {
                         _currentChannel = Buffer.concat(_currentChannel);
                         _state = states.DATA;
                         open(_currentChannel);
@@ -69,6 +69,10 @@ module.exports = () => {
                             _state = states.IDLE;
                             _close();
                             _currentChannel = null;
+                        }
+                        if(data[i] === specBytes.START) {
+                            _state = states.HEADER;
+                            _currentChannel = [];
                         }
                         i++;
                         _escape = false;
