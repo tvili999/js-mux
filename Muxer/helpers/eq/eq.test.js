@@ -1,4 +1,4 @@
-const eq = require("./eq");
+const eq = require("./index");
 
 test('pass', () => {
     expect(true).toBe(true);
