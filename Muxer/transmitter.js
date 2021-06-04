@@ -24,9 +24,8 @@ module.exports = () => {
                 sendData(Buffer.from([ specBytes.ID_END ]));
 
                 _currentChannel = channel;
-                const channelArray = [...channel];
-                if(!_openChannels.exists(channelArray))
-                    _openChannels.set(channelArray);
+                if(!_openChannels.exists(channel))
+                    _openChannels.set(channel);
             }
 
             data = Buffer.from(data);
@@ -43,8 +42,7 @@ module.exports = () => {
         },
         close: (channel) => {
             channel = Buffer.from(channel);
-            const channelArray = [...channel];
-            if(!_openChannels.exists(channelArray))
+            if(!_openChannels.exists(channel))
                 return;
             
             if(!eq(_currentChannel, channel)) {
@@ -56,7 +54,7 @@ module.exports = () => {
             sendData(Buffer.from([ specBytes.ESCAPE, specBytes.END ]));
             flush();
 
-            _openChannels.delete(channelArray);
+            _openChannels.delete(channel);
             _currentChannel = null;
         }
     }
