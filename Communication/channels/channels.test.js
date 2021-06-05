@@ -49,9 +49,9 @@ test('open a channel and read header', () => {
 
     const openHandler = jest.fn();
     channels.on("connect", openHandler);
-    transmitter.send([1], [...Buffer.from("asdasd"), 0, 0,0,0,0]);
+    transmitter.send([1], [...Buffer.from("asdasd"), 0, 0,0,0,1]);
 
     expect(openHandler.mock.calls.length).toBe(1);
     expect(openHandler.mock.calls[0][0].query).toEqual(Buffer.from("asdasd"));
-    expect(openHandler.mock.calls[0][0].sessionId).toEqual(0);
+    expect(openHandler.mock.calls[0][0].sessionId).toEqual(1);
 });

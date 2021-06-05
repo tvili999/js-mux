@@ -1,8 +1,8 @@
 module.exports = (channel, data) => {
-    if(channel.headerRead)
-        return;
+    if(!channel.headerState)
+        channel.headerState = "RESOURCE";
 
-    if(!channel.sessionId) {
+    if(channel.headerState === "RESOURCE") {
         if(!channel.query)
             channel.query = [];
 
@@ -14,12 +14,14 @@ module.exports = (channel, data) => {
             channel.query.push(Buffer.from(data.slice(0, zeroByte)));
             channel.query = Buffer.concat(channel.query);
 
-            data = data.slice(zeroByte);
-            channel.sessionId = [];
+            data = data.slice(zeroByte + 1);
+            channel.headerState = "SESSION_ID";
         }
     }
 
-    if(channel.sessionId) {
+    if(channel.headerState === "SESSION_ID") {
+        if(!channel.sessionId)
+            channel.sessionId = [];
         let i = 0;
         while(channel.sessionId.length < 4 && i < data.length) {
             channel.sessionId.push(data[i]);
@@ -29,10 +31,13 @@ module.exports = (channel, data) => {
 
         if(channel.sessionId.length == 4) {
             const buf = Buffer.from(channel.sessionId);
-            channel.sessionId = buf.readUInt32LE();
-            channel.headerRead = true;
+            channel.sessionId = buf.readUInt32BE();
+            channel.headerState = "DONE";
         }
     }
+
+    if(channel.headerState === "DONE")
+        return;
 
     return data;
 }

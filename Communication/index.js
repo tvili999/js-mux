@@ -13,6 +13,7 @@ const createServer = () => {
             if(!queryHandler)
                 return;
 
+            console.log(channel.sessionId);
             queryHandler(connection.exports, channel);
         })
     });

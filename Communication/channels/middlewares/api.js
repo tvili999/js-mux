@@ -1,5 +1,5 @@
 module.exports = (channel, data) => {
-    if(!channel.headerRead || channel.exports)
+    if(channel.headerState === "DONE" || channel.exports)
         return;
 
     channel.exports = {
@@ -12,5 +12,6 @@ module.exports = (channel, data) => {
         },
     }
 
+    console.log("event fires")
     channel.events.fire("connect");
 }
