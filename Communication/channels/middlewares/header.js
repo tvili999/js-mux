@@ -1,4 +1,4 @@
-module.exports = (channel, data) => {
+module.exports = (channel, data, next) => {
     if(!channel.headerState)
         channel.headerState = "RESOURCE";
 
@@ -36,8 +36,8 @@ module.exports = (channel, data) => {
         }
     }
 
-    if(channel.headerState === "DONE")
+    if(channel.headerState !== "DONE")
         return;
 
-    return data;
+    next(data);
 }

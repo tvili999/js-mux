@@ -19,8 +19,8 @@ const createChannels = (connectionObject, middlewares) => {
 
     receiver.on('open', (channelId) => {
         const channel = getOrCreateChannel(channelId);
-        channel.events.on("connect", () => {
-            _events.fire("connect", channel.exports);
+        channel.events.on("connect", (...args) => {
+            _events.fire("connect", ...args);
         });
     });
 
@@ -28,16 +28,23 @@ const createChannels = (connectionObject, middlewares) => {
         const channel = getOrCreateChannel(channelId);
 
         for(const middleware of middlewares) {
-            const newData = middleware(channel, data);
-            if(newData)
-                data = newData;
+            let callNext = false;
+            const next = (_data) => {
+                if(_data)
+                    data = _data;
+                callNext = true;
+            }
+
+            middleware(channel, data, next);
+            if(!callNext)
+                break;
         }
     });
 
     receiver.on('close', (channelId) => {
         const channel = channels.get(channelId);
         if(channel) {
-            channel.events.fire("disconnect");
+            channel.events.fire("close");
             channels.delete(channelId);
         }
     });

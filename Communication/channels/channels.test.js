@@ -31,17 +31,17 @@ test('open a channel', () => {
     expect(openHandler.mock.calls.length).toBe(1);
 });
 
-test('disconnect channel', () => {
+test('close channel', () => {
     const { channels, transmitter } = mockContext();
 
-    const disconnectHandler = jest.fn();
+    const closeHandler = jest.fn();
     channels.on("connect", (channel) => {
-        channel.on("disconnect", disconnectHandler);
+        channel.on("close", closeHandler);
     });
     transmitter.send([1], [...Buffer.from("asdasd"), 0, 0,0,0,0]);
     transmitter.close([1]);
 
-    expect(disconnectHandler.mock.calls.length).toBe(1);
+    expect(closeHandler.mock.calls.length).toBe(1);
 });
 
 test('open a channel and read header', () => {
@@ -54,4 +54,17 @@ test('open a channel and read header', () => {
     expect(openHandler.mock.calls.length).toBe(1);
     expect(openHandler.mock.calls[0][0].query).toEqual(Buffer.from("asdasd"));
     expect(openHandler.mock.calls[0][0].sessionId).toEqual(1);
+});
+
+test('query data event', () => {
+    const { channels, transmitter } = mockContext();
+
+    const messageHandler = jest.fn();
+    channels.on("connect", (query) => {
+        query.on('data', messageHandler);
+    });
+    transmitter.send([1], [...Buffer.from("asdasd"), 0, 0,0,0,1, 1, 2, 3]);
+
+    expect(messageHandler.mock.calls.length).toBe(1);
+    expect(messageHandler.mock.calls[0][0]).toEqual(Buffer.from([1, 2, 3]));
 });
