@@ -43,25 +43,14 @@ server.on('disconnect', connection => {
 
 Queries are the endpoints we can specify that other peers can send data to.
 
-You can read all data at once.
+You can read data as a stream.
 
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.query('some-query', async (connection, query) => {
-    const data = await query.readAll();
-});
-```
-Or you can read it as a stream.
-
-```js
-const communication = require("js-mux/Communication");
-
-const peer = communication();
-
-peer.query('some-query', async (connection, query) => {
+server.query('some-query', async (connection, query) => {
     query.on('data', data => {
         /* Next chunk of data is received */
     });
@@ -72,6 +61,18 @@ peer.query('some-query', async (connection, query) => {
 });
 ```
 
+Or you can read it all at once.
+
+```js
+const communication = require("js-mux/Communication");
+
+const server = communication();
+
+server.query('some-query', async (connection, query) => {
+    const data = await query.readAll();
+});
+```
+
 ### Upstream
 
 An upstream is a data stream to a connection we can write as we want. It is one directional.
@@ -79,9 +80,9 @@ An upstream is a data stream to a connection we can write as we want. It is one 
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.on('connect', connection => {
+server.on('connect', connection => {
     const stream = connection.openUpstream('some-query');
     stream.send("Some message");
     stream.close();
@@ -93,9 +94,9 @@ If all the data is available at once, the upper example has a simpler form, the 
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.on('connect', connection => {
+server.on('connect', connection => {
     connection.publish('some-query', "Some message");
 });
 ```
@@ -108,9 +109,9 @@ You can start sending the response while reading the request data.
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.query('some-request', (connection, query) => {
+server.query('some-request', (connection, query) => {
     // This can happen anywhere, anytime in the future. Even in a data event.
     const responseStream = query.openResponseStream();
     responseStream.send("response");
@@ -123,9 +124,9 @@ If all the data is available at once, the upper example has a simpler form, the 
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.query('some-request', (connection, query) => {
+server.query('some-request', (connection, query) => {
     query.sendResponse("response");
 });
 ```
@@ -138,9 +139,9 @@ You can start sending the request while reading the response data (as presented 
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.on('connect', connection => {
+server.on('connect', connection => {
     const requestStream = connection.openRequest("some-request");
 
     requestStream.on('response', responseStream => {
@@ -158,9 +159,9 @@ The above code can be written in a simpler form.
 ```js
 const communication = require("js-mux/Communication");
 
-const peer = communication();
+const server = communication();
 
-peer.on('connect', async connection => {
+server.on('connect', async connection => {
     const responseData = await connection.request("some-request", "request-data");
     /* Do anything with the response data */
 });
