@@ -1,6 +1,7 @@
 const createChannels = require("./channels");
 const createConnections = require("./connections");
 const createQueries = require("./queries");
+const createSessions = require("./sessions");
 
 const createServer = () => {
     const _queries = createQueries();
@@ -8,12 +9,19 @@ const createServer = () => {
     const _connections = createConnections();
     _connections.on("connect", connection => {
         connection.channels = createChannels(connection);
+        connection.sessions = createSessions();
+        connection.exports = {
+            query: (data) => {
+                const channel = connection.channels.open();
+                return connection.channels.send(data);
+            }
+        };
         connection.channels.on("connect", channel => {
-            const queryHandler = _queries.get(channel.query);
-            if(!queryHandler)
-                return;
-
-            queryHandler(connection.exports, channel);
+            if(channel.messageType == "PUBLISH" || channel.messageType == "QUESTION")
+                _queries.connect(channel, connection.exports);
+            if(channel.messageType == "ANSWER") {
+                
+            }
         })
     });
     _connections.on("disconnect", connection => connection.channels.disconnect());

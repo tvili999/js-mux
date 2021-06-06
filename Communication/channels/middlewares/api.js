@@ -4,6 +4,14 @@ module.exports = (channel, data, next) => {
         return;
     }
 
+    let messageType;
+    if(channel.messageType == 0)
+        messageType = "PUBLISH";
+    if(channel.messageType == 1)
+        messageType = "QUESTION";
+    if(channel.messageType == 2)
+        messageType = "ANSWER";
+
     channel.exports = {
         ...channel.events.exports,
         get query() {
@@ -12,11 +20,12 @@ module.exports = (channel, data, next) => {
         get sessionId() {
             return channel.sessionId;
         },
-        readAll: async () => {
+        messageType,
+        readAll: async () =>  {
             let buffers = [];
 
             channel.events.on('data', data => buffers.push(data));
-            await new Promise(resolve => channel.events.on('close', resolve));
+            await new Promise(resolve => channel.events.on('close', resolve) );
 
             return Buffer.concat(buffers);
         }

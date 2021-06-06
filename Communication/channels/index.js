@@ -1,14 +1,20 @@
-const { Receiver } = require("../../Muxer");
+const { Receiver, Transmitter } = require("../../Muxer");
 const events = require("../helpers/events");
 const createMap = require("../helpers/arrayMap");
+const _idGenerator = require("../helpers/idGenerator");
+const { uintToBufferBE } = require("../helpers/uintToBuffer");
 const _middlewares = require("./middlewares");
 
 const createChannels = (connectionObject, middlewares) => {
     middlewares = [..._middlewares, ...(middlewares || [])];
 
     const receiver = Receiver();
-    connectionObject.connection.on('data', receiver.feed);
+    const transmitter = Transmitter();
+    transmitter.on('data', connectionObject.connection.transmit);
+    connectionObject.connection.on('receive', receiver.feed);
 
+    const _channels = createMap();
+    const idGenerator = _idGenerator(x => x !== 0 && !_channels.exists(uintToBufferBE(x)));
     const _events = events();
     const channels = createMap();
 
@@ -49,8 +55,41 @@ const createChannels = (connectionObject, middlewares) => {
         }
     });
 
+
     const api = {
         disconnect: () => {
+            // TODO: Close all open channels
+        },
+        get channels() {
+            return _channels;
+        },
+        open: ({ query, sessionId, messageType }) => {
+            const id = uintToBufferBE(idGenerator(), 0);
+
+            transmitter.send(id, Buffer.concat([
+                Buffer.from(query),
+                Buffer.from([0]),
+                Buffer.from(uintToBufferBE(sessionId)),
+                Buffer.from([messageType])
+            ]));
+
+            let _open = true;
+
+            return _channels[id] = {
+                id,
+                get isOpen() {
+                    return _open;
+                },
+                send: (data) => transmitter.send(id, Buffer.from(data)),
+                close: () => {
+                    if(!_open)
+                        return;
+
+                    _channels.delete(id);
+                    transmitter.close(id);
+                    _open = false;
+                }
+            }
         },
         ..._events.exports
     };

@@ -32,6 +32,14 @@ module.exports = (channel, data, next) => {
         if(channel.sessionId.length == 4) {
             const buf = Buffer.from(channel.sessionId);
             channel.sessionId = buf.readUInt32BE();
+            channel.headerState = "MESSAGE_TYPE";
+        }
+    }
+
+    if(channel.headerState === "MESSAGE_TYPE") {
+        if(data.length > 0) {
+            channel.messageType = data[0];
+            data = data.slice(1);
             channel.headerState = "DONE";
         }
     }

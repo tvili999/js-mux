@@ -13,7 +13,13 @@ module.exports = () => {
             if(!newObject)
                 throw "Query already exists";
         },
-        get: (name) => _queryHandlers.get(Buffer.from(name))
+        connect: (channel, connection) => {
+            const queryHandler = _queryHandlers.get(Buffer.from(channel.query));
+            if(!queryHandler)
+                return;
+
+            queryHandler(connection, channel);
+        }
     };
 
     return api;

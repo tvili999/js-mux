@@ -7,21 +7,11 @@ test('passes', () => {
 test('write a query', () => {
     const queries = createQueries();
 
-    const handler = () => {};
+    const handler = jest.fn();
     queries.query("get-test", handler);
 
-    const result = queries.get("get-test");
-    expect(result).toBe(handler);
-});
-
-test('write a query with different forms of data', () => {
-    const queries = createQueries();
-
-    const handler = () => {};
-    queries.query("get-test", handler);
-
-    const result = queries.get(Buffer.from("get-test"));
-    expect(result).toBe(handler);
+    queries.connect({ query: Buffer.from("get-test") });
+    expect(handler.mock.calls.length).toBe(1);
 });
 
 test('do not let multiple queries with the same name', () => {

@@ -12,9 +12,9 @@ test('connection object data event', () => {
     const connection = createConnections.createConnection();
 
     const dataHandler = jest.fn(data => {});
-    connection.on('data', dataHandler);
+    connection.on('receive', dataHandler);
 
-    connection.data("asdasd");
+    connection.receive("asdasd");
 
     expect(dataHandler.mock.calls.length).toBe(1);
     expect(dataHandler.mock.calls[0][0]).toBe("asdasd");

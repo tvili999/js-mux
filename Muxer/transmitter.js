@@ -16,6 +16,9 @@ module.exports = () => {
             if(type === "data") _dataHandlers = [..._dataHandlers, handler];
             if(type === "flush") _flushHandlers = [..._flushHandlers, handler];
         },
+        isOpen: channel => {
+            return _openChannels.exists(channel);
+        },
         send: (channel, data) => {
             channel = Buffer.from(channel);
             if(!eq(_currentChannel, channel)) {

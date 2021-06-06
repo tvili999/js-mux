@@ -14,6 +14,8 @@ const createConnections = () => {
             connection.on('disconnect', () => {
                 api.disconnect(connection);
             });
+
+            return connectionObject;
         },
         disconnect: (connection) => {
             const connectionObject = _connections.find(x => x?.connection === connection);
@@ -35,7 +37,8 @@ const createConnections = () => {
 createConnections.createConnection = () => {
     let _events = createEvents();
     return {
-        data: (data) => _events.fire("data", data),
+        receive: (data) => _events.fire("receive", data),
+        transmit: (data) => _events.fire("transmit", data),
         disconnect: () => _events.fire("disconnect"),
         ..._events.exports
     }
