@@ -15,7 +15,7 @@ const createConnections = () => {
                 api.disconnect(connection);
             });
 
-            return connectionObject;
+            return connectionObject.exports;
         },
         disconnect: (connection) => {
             const connectionObject = _connections.find(x => x?.connection === connection);

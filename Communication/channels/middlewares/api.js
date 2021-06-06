@@ -6,11 +6,11 @@ module.exports = (channel, data, next) => {
 
     let messageType;
     if(channel.messageType == 0)
-        messageType = "PUBLISH";
+        messageType = "DOWNSTREAM";
     if(channel.messageType == 1)
-        messageType = "QUESTION";
+        messageType = "REQUEST";
     if(channel.messageType == 2)
-        messageType = "ANSWER";
+        messageType = "RESPONSE";
 
     channel.exports = {
         ...channel.events.exports,

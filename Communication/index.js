@@ -1,7 +1,7 @@
 const createChannels = require("./channels");
 const createConnections = require("./connections");
 const createQueries = require("./queries");
-const createSessions = require("./sessions");
+const createRequests = require("./requests");
 
 const createServer = () => {
     const _queries = createQueries();
@@ -9,19 +9,46 @@ const createServer = () => {
     const _connections = createConnections();
     _connections.on("connect", connection => {
         connection.channels = createChannels(connection);
-        connection.sessions = createSessions();
+        connection.requests = createRequests(connection);
         connection.exports = {
-            query: (data) => {
-                const channel = connection.channels.open();
-                return connection.channels.send(data);
+            openUpstream: (name) => {
+                return connection.channels.open({
+                    query: name,
+                    sessionId: 0,
+                    messageType: 0
+                });
+            },
+            publish: (name, data) =>{
+                const stream = connection.exports.openUpstream(name);
+                stream.send(data);
+                stream.close();
+            },
+            openRequest: (name) => {
+                return connection.requests.open({ query: name });
+            },
+            request: (name, data) => {
+                const request = connection.exports.openRequest(name);
+                const response = new Promise(resolve => {
+                    request.on('response', async responseStream => {
+                        resolve(await responseStream.readAll());
+                    })
+                });
+                request.send(data);
+                request.close();
+                return response;
             }
         };
         connection.channels.on("connect", channel => {
-            if(channel.messageType == "PUBLISH" || channel.messageType == "QUESTION")
+            if(channel.messageType == "REQUEST") {
+                connection.requests.request(channel);
                 _queries.connect(channel, connection.exports);
-            if(channel.messageType == "ANSWER") {
-                
             }
+
+            if(channel.messageType == "RESPONSE")
+                connection.requests.response(channel);
+
+            if(channel.messageType == "DOWNSTREAM")
+                _queries.connect(channel, connection.exports);
         })
     });
     _connections.on("disconnect", connection => connection.channels.disconnect());
