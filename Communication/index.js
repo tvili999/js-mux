@@ -53,11 +53,11 @@ const createPeer = () => {
                 _queries.connect(channel, connection.exports);
         })
 
-        events.fire('connect', connection)
+        events.fire('connect', connection.exports);
     });
     _connections.on("disconnect", connection => {
         connection.channels.disconnect()
-        events.fire('disconnect', connection);
+        events.fire('disconnect', connection.exports);
     });
 
     return {
