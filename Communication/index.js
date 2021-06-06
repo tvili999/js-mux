@@ -2,8 +2,10 @@ const createChannels = require("./channels");
 const createConnections = require("./connections");
 const createQueries = require("./queries");
 const createRequests = require("./requests");
+const _events = require("./helpers/events");
 
-const createServer = () => {
+const createPeer = () => {
+    const events = _events();
     const _queries = createQueries();
 
     const _connections = createConnections();
@@ -50,10 +52,16 @@ const createServer = () => {
             if(channel.messageType == "DOWNSTREAM")
                 _queries.connect(channel, connection.exports);
         })
+
+        events.fire('connect', connection)
     });
-    _connections.on("disconnect", connection => connection.channels.disconnect());
+    _connections.on("disconnect", connection => {
+        connection.channels.disconnect()
+        events.fire('disconnect', connection);
+    });
 
     return {
+        ...events.exports,
         connect: _connections.connect,
         disconnect: _connections.disconnect,
         get connections() {
@@ -65,4 +73,6 @@ const createServer = () => {
     };
 };
 
-module.exports = createServer;
+createPeer.createConnection = createConnections.createConnection;
+
+module.exports = createPeer;
