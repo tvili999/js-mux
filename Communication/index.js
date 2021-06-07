@@ -69,7 +69,8 @@ const createPeer = () => {
         },
         query: (name, handler) => {
             _queries.query(name, handler);
-        }
+        },
+        middleware: _queries.middleware
     };
 };
 
