@@ -1,11 +1,11 @@
 const specBytes = require("./specialBytes");
-const createSet = require("./helpers/arraySet");
+const createMap = require("js-utils/arrayMap");
 const eq = require("./helpers/eq");
 
 module.exports = () => {
     let _dataHandlers = [];
     let _flushHandlers = [];
-    let _openChannels = createSet();
+    let _openChannels = createMap();
     let _currentChannel = null;
 
     const sendData = (data) => _dataHandlers.forEach(handler => handler(data));
@@ -28,7 +28,7 @@ module.exports = () => {
 
                 _currentChannel = channel;
                 if(!_openChannels.exists(channel))
-                    _openChannels.set(channel);
+                    _openChannels.set(channel, true);
             }
 
             data = Buffer.from(data);

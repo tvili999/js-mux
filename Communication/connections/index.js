@@ -1,4 +1,4 @@
-const createEvents = require("../helpers/events");
+const createEvents = require("js-utils/events");
 
 const createConnections = () => {
     let _connections = [];

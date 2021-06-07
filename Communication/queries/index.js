@@ -1,4 +1,4 @@
-const arrayMap = require("../helpers/arrayMap");
+const arrayMap = require("js-utils/arrayMap");
 
 module.exports = () => {
     let _queryHandlers = arrayMap();

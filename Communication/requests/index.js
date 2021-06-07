@@ -1,15 +1,15 @@
-const _idGenerator = require("../helpers/idGenerator");
-const _events = require("../helpers/events");
+const createIdGenerator = require("js-utils/idGenerator");
+const createEvents = require("js-utils/events");
 
 const createRequests = (connection) => {
     const _requests = {};
-    const idGenerator = _idGenerator(x => x !== 0 && !_requests[x]);
+    const idGenerator = createIdGenerator(x => x !== 0 && !_requests[x]);
 
     const api = {
         // SENDING
         open: ({ query }) => {
             const id = idGenerator();
-            const events = _events();
+            const events = createEvents();
 
             const channel = connection.channels.open({
                 query,

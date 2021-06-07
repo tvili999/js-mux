@@ -2,10 +2,10 @@ const createChannels = require("./channels");
 const createConnections = require("./connections");
 const createQueries = require("./queries");
 const createRequests = require("./requests");
-const _events = require("./helpers/events");
+const createEvents = require("js-utils/events");
 
 const createPeer = () => {
-    const events = _events();
+    const events = createEvents();
     const _queries = createQueries();
 
     const _connections = createConnections();

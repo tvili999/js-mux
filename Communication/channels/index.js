@@ -1,7 +1,7 @@
 const { Receiver, Transmitter } = require("../../Muxer");
-const events = require("../helpers/events");
-const createMap = require("../helpers/arrayMap");
-const _idGenerator = require("../helpers/idGenerator");
+const createEvents = require("js-utils/events");
+const createMap = require("js-utils/arrayMap");
+const createIdGenerator = require("js-utils/idGenerator");
 const { uintToBufferBE } = require("../helpers/uintToBuffer");
 const _middlewares = require("./middlewares");
 
@@ -14,13 +14,13 @@ const createChannels = (connectionObject, middlewares) => {
     connectionObject.connection.on('receive', receiver.feed);
 
     const _channels = createMap();
-    const idGenerator = _idGenerator(x => x !== 0 && !_channels.exists(uintToBufferBE(x)));
-    const _events = events();
+    const idGenerator = createIdGenerator(x => x !== 0 && !_channels.exists(uintToBufferBE(x)));
+    const _events = createEvents();
     const channels = createMap();
 
     const getOrCreateChannel = (channelId) => channels.getOrCreate(channelId, () => ({
         id: channelId,
-        events: events()
+        events: createEvents()
     }));
 
     receiver.on('open', (channelId) => {
