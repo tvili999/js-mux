@@ -14,6 +14,59 @@ test('write a query', () => {
     expect(handler.mock.calls.length).toBe(1);
 });
 
+test('middleware runs before', () => {
+    const queries = createQueries();
+
+    const handler = jest.fn();
+    queries.query("get-test", handler);
+
+    const middleware = jest.fn(() => {
+        expect(handler.mock.calls.length).toBe(0);
+    })
+    queries.middleware((_, __, next) => {
+        middleware();
+        next();
+    })
+
+    queries.connect({ query: Buffer.from("get-test") });
+    expect(handler.mock.calls.length).toBe(1);
+    expect(middleware.mock.calls.length).toBe(1);
+});
+
+
+test('middleware runs after', () => {
+    const queries = createQueries();
+
+    const handler = jest.fn();
+    queries.query("get-test", handler);
+
+    const middleware = jest.fn(() => {
+        expect(handler.mock.calls.length).toBe(1);
+    })
+    queries.middleware((_, __, next) => {
+        next();
+        middleware();
+    })
+
+    queries.connect({ query: Buffer.from("get-test") });
+    expect(handler.mock.calls.length).toBe(1);
+    expect(middleware.mock.calls.length).toBe(1);
+});
+
+test('call gets interrupted', () => {
+    const queries = createQueries();
+
+    const handler = jest.fn();
+    queries.query("get-test", handler);
+
+    const middleware = jest.fn();
+    queries.middleware(middleware);
+
+    queries.connect({ query: Buffer.from("get-test") });
+    expect(handler.mock.calls.length).toBe(0);
+    expect(middleware.mock.calls.length).toBe(1);
+});
+
 test('do not let multiple queries with the same name', () => {
     const queries = createQueries();
 
