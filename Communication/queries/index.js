@@ -51,12 +51,12 @@ module.exports = () => {
                 ..._middlewares, 
                 queryHandlerMiddleware
             ];
-            const callMiddleware = (i) => {
-                middlewares[i](connection, channel, () => {
-                    callMiddleware(i + 1);
+            const callMiddleware = async (i) => {
+                await middlewares[i](connection, channel, async () => {
+                    await callMiddleware(i + 1);
                 });
             }
-            callMiddleware(0);
+            return callMiddleware(0);
         }
     };
 
