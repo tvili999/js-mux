@@ -32,6 +32,13 @@ test('accept query', () => {
     expect(queryHandler.mock.calls.length).toBe(1);
 });
 
+test('servers do not share context', () => {
+    const c1 = createContext(1);
+    const c2 = createContext(1);
+    c1.server.query("get-test", () => {});
+    c2.server.query("get-test", () => {});
+});
+
 test('multiple queries for same resource on same connection', () => {
     const { server, connections } = createContext(1);
 

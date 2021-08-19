@@ -5,30 +5,30 @@ module.exports = () => {
     let _queryHandlers = arrayMap();
     let _middlewares = [];
 
-    const dispatchMiddleware = (connection, channel, next) => {
-        channel.dispatch = (handler) => {
+    const dispatchMiddleware = async (connection, channel, next) => {
+        channel.dispatch = async (handler) => {
             if(channel.hasQueryHandler) {
                 const queryHandler = _queryHandlers.get(Buffer.from(handler));
                 if(!queryHandler)
                     return;
                 
-                queryHandler(connection, channel);
+                await queryHandler(connection, channel);
             }
             else {
                 channel.dispatchQuery = handler;
             }
         }
-        next();
+        return next();
     };
 
-    const queryHandlerMiddleware = (connection, channel) => {
+    const queryHandlerMiddleware = async (connection, channel) => {
         let query = channel.dispatchQuery || channel.query;
         const queryHandler = _queryHandlers.get(Buffer.from(query));
         if(!queryHandler)
             return;
     
         channel.hasQueryHandler = true;
-        queryHandler(connection, channel);
+        await queryHandler(connection, channel);
     };
 
     const api = {
@@ -38,8 +38,9 @@ module.exports = () => {
                 newObject = true;
                 return handler;
             });
-            if(!newObject)
-                throw "Query already exists";
+            if(!newObject) {
+                throw `Query '${name}' already exists`;
+            }
         },
         middleware: (middleware) => {
             _middlewares.push(middleware);
@@ -52,8 +53,8 @@ module.exports = () => {
                 queryHandlerMiddleware
             ];
             const callMiddleware = async (i) => {
-                await middlewares[i](connection, channel, async () => {
-                    await callMiddleware(i + 1);
+                await middlewares[i](connection, channel, () => {
+                    return callMiddleware(i + 1);
                 });
             }
             return callMiddleware(0);

@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --runInBand --detectOpenHandles --testTimeout 500 --watch"
   },
   "devDependencies": {
     "jest": "^27.0.3"

@@ -14,6 +14,28 @@ test('write a query', () => {
     expect(handler.mock.calls.length).toBe(1);
 });
 
+test('middleware async catches error', async () => {
+    const queries = createQueries();
+
+    queries.query("get-test", async () => {
+        throw "Error";
+    });
+
+    const errorHandler = jest.fn();
+    queries.middleware(async (_, __, next) => {
+        try {
+            await next();
+        }
+        catch(e) {
+            errorHandler();
+        }
+    })
+
+    await queries.connect({ query: Buffer.from("get-test") });
+    expect(errorHandler.mock.calls.length).toBe(1);
+});
+
+
 test('middleware runs before', () => {
     const queries = createQueries();
 
