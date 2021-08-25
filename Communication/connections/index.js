@@ -45,6 +45,8 @@ createConnections.createConnection = function() {
 };
 
 createConnections.createConnection.fromSocket = function(socket) {
+    const connection = createConnections.createConnection();
+
     socket.on('data', (data) => {
         connection.receive(data);
     });
@@ -54,6 +56,8 @@ createConnections.createConnection.fromSocket = function(socket) {
     connection.on('transmit', (data) => {
         socket.write(data);
     });
+
+    return connection;
 }
 
 module.exports = createConnections;
