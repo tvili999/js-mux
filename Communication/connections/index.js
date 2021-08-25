@@ -34,7 +34,7 @@ const createConnections = () => {
     return api;
 }
 
-createConnections.createConnection = () => {
+createConnections.createConnection = function() {
     let _events = createEvents();
     return {
         receive: (data) => _events.fire("receive", data),
@@ -43,5 +43,17 @@ createConnections.createConnection = () => {
         ..._events.exports
     }
 };
+
+createConnections.createConnection.fromSocket = function(socket) {
+    socket.on('data', (data) => {
+        connection.receive(data);
+    });
+    socket.on('end', () => {
+        connection.disconnect();
+    });
+    connection.on('transmit', (data) => {
+        socket.write(data);
+    });
+}
 
 module.exports = createConnections;
